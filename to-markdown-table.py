@@ -48,6 +48,9 @@ interesting=set([
 
 allMatches=[]
 
+highScore=0
+highCombinedScore=0
+
 for event in ['2025cur','2025new','2025dal','2025joh','2025arc','2025gal','2025hop','2025mil']:
 	info = json.load(open(f'data/{event}.event.json'))
 	division = info['short_name']
@@ -62,16 +65,33 @@ for event in ['2025cur','2025new','2025dal','2025joh','2025arc','2025gal','2025h
 		dt=datetime.fromtimestamp(match['time'], tz)
 		match['mdTime'] = f'[date={dt.strftime("%Y-%m-%d")} time={dt.strftime("%H:%M")} format="LLLL" timezone="{zone}"]'
 		allMatches.append(match)
+		maxScore = max(match["alliances"]["red"]["score"], match["alliances"]["blue"]["score"])
+		combinedScore = match["alliances"]["red"]["score"] + match["alliances"]["blue"]["score"]
+		if (maxScore>highScore):
+			highScore=maxScore
+		if (combinedScore>highCombinedScore):
+			highCombinedScore=combinedScore
 
 allMatches.sort(key=lambda x: x['time'])
 
-print('| Match | Time | Red | Blue |')
+print('| Match | Result | Red | Blue |')
 print('| --- | --- | --- | --- |')
 for match in allMatches:
 	if match['actual_time']:
 		link = f'[{match["division"]} {match['comp_level']}{match["match_number"]}](https://www.thebluealliance.com/match/{match["key"]})'
+		scores = f'{match["alliances"]["red"]["score"]} to {match["alliances"]["blue"]["score"]}'
+		maxScore = max(match["alliances"]["red"]["score"], match["alliances"]["blue"]["score"])
+		combinedScore = match["alliances"]["red"]["score"] + match["alliances"]["blue"]["score"]
+		if (maxScore == highScore):
+			scores = f"High Score: {scores}"
+			interesting.add(match['key'])
+		if (combinedScore == highCombinedScore):
+			scores = f"High combined Score: {scores}"
+			interesting.add(match['key'])
 	else:
 		link = f'[{match["division"]}](https://www.twitch.tv/{match["stream"]}) {match['comp_level']}{match["match_number"]}'
+		scores = ''
+
 	if match['key'] in interesting:
-		print(f'| {link} | {match["mdTime"]} | {match["red"]} | {match["blue"]} |')
+		print(f'| {link} | {scores or match["mdTime"]} | {match["red"]} | {match["blue"]} |')
 

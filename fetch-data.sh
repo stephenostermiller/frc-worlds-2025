@@ -15,8 +15,13 @@ mkdir -p data/
 
 for event in 2025cur 2025new 2025dal 2025joh 2025arc 2025gal 2025hop 2025mil
 do
-	curl -H "X-TBA-Auth-Key: $TBAKEY" https://www.thebluealliance.com/api/v3/event/$event > data/$event.event.json
-	sleep 1
-	curl -H "X-TBA-Auth-Key: $TBAKEY" https://www.thebluealliance.com/api/v3/event/$event/matches > data/$event.matches.json
+	if [ ! -e "data/$event.event.json" ]
+	then
+		echo "Writing data/$event.event.json"
+		curl -s -H "X-TBA-Auth-Key: $TBAKEY" https://www.thebluealliance.com/api/v3/event/$event > data/$event.event.json
+		sleep 1
+	fi
+	echo "Writing data/$event.matches.json"
+	curl -s -H "X-TBA-Auth-Key: $TBAKEY" https://www.thebluealliance.com/api/v3/event/$event/matches > data/$event.matches.json
 	sleep 1
 done
